@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,7 @@ import br.com.alura.agenda.modelo.Aluno;
  * Created by Hiro on 29/09/2017.
  */
 
-public class AlunoDAO extends SQLiteOpenHelper{
+public class AlunoDAO extends SQLiteOpenHelper {
 
 
     public AlunoDAO(Context context) {
@@ -39,15 +40,21 @@ public class AlunoDAO extends SQLiteOpenHelper{
 
         SQLiteDatabase db = getWritableDatabase();
 
-        ContentValues dados =  new ContentValues();
+        ContentValues dados = pegaDadosDoAluno(aluno);
+
+        db.insert("Alunos", null, dados);
+
+    }
+
+    @NonNull
+    private ContentValues pegaDadosDoAluno(Aluno aluno) {
+        ContentValues dados = new ContentValues();
         dados.put("nome", aluno.getNome());
         dados.put("endereco", aluno.getEndereco());
         dados.put("telefone", aluno.getTelefone());
         dados.put("site", aluno.getSite());
         dados.put("nota", aluno.getNota());
-
-        db.insert("Alunos", null, dados );
-
+        return dados;
     }
 
     public List<Aluno> buscaAlunos() {
@@ -58,7 +65,7 @@ public class AlunoDAO extends SQLiteOpenHelper{
 
         List<Aluno> alunos = new ArrayList<Aluno>();
 
-        while(c.moveToNext()){
+        while (c.moveToNext()) {
             Aluno aluno = new Aluno();
             aluno.setId(c.getLong(c.getColumnIndex("id")));
             aluno.setNome(c.getString(c.getColumnIndex("nome")));
@@ -71,5 +78,21 @@ public class AlunoDAO extends SQLiteOpenHelper{
         }
         c.close();
         return alunos;
+    }
+
+    public void deleta(Aluno aluno) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        String[] params = {aluno.getId().toString()};
+        db.delete("Alunos", "id = ?", params);
+    }
+
+    public void altera(Aluno aluno) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues dados = pegaDadosDoAluno(aluno);
+
+        String[] params = {aluno.getId().toString()};
+        db.update("Alunos", dados, "id = ?", params );
     }
 }
